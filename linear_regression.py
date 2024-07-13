@@ -87,7 +87,7 @@ class LinearRegression:
         
         loss_history = []  # For storing loss values over epochs if plotting is needed
 
-        for _ in range(epoch):
+        for count in range(epoch):
             # Calculate predictions
             pred = np.dot(input_ar, weights) + w0  # Dot product of inputs and weights + bias term
 
@@ -103,6 +103,7 @@ class LinearRegression:
             weights -= learningRate * dl_wi
             w0 -= learningRate * dL_w0
 
+                
         self.coef = [w0] + list(weights)  # Combine bias and weights into a single list
 
         self.plotLR(input_ar,input_labels,self.coef)
