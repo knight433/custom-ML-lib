@@ -290,3 +290,66 @@ class KMeanClustering:
         plt.legend()
         plt.show()
 
+class svm:
+
+    def __init__(self) -> None:
+        self.w = None
+        self.b = None
+    
+    def predict(self, X):
+        approx = np.dot(X, self.w) - self.b
+        return np.sign(approx)
+
+    def plot_svm(self,X,y):
+        def get_hyperplane_value(x, w, b, offset):
+            return (-w[0] * x + b + offset) / w[1]
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        plt.scatter(X[:, 0], X[:, 1], marker="o", c=y)
+
+        x0_1 = np.amin(X[:, 0])
+        x0_2 = np.amax(X[:, 0])
+
+        x1_1 = get_hyperplane_value(x0_1, self.w, self.b, 0)
+        x1_2 = get_hyperplane_value(x0_2, self.w, self.b, 0)
+
+        x1_1_m = get_hyperplane_value(x0_1, self.w, self.b, -1)
+        x1_2_m = get_hyperplane_value(x0_2, self.w, self.b, -1)
+
+        x1_1_p = get_hyperplane_value(x0_1, self.w, self.b, 1)
+        x1_2_p = get_hyperplane_value(x0_2, self.w, self.b, 1)
+
+        ax.plot([x0_1, x0_2], [x1_1, x1_2], "y--")
+        ax.plot([x0_1, x0_2], [x1_1_m, x1_2_m], "k")
+        ax.plot([x0_1, x0_2], [x1_1_p, x1_2_p], "k")
+
+        x1_min = np.amin(X[:, 1])
+        x1_max = np.amax(X[:, 1])
+        ax.set_ylim([x1_min - 3, x1_max + 3])
+
+        plt.show()
+
+    def solve (self,x,y,learningRate=0.01,lambda_para = 0.01,epcoh=1000):
+        
+        n_samples, n_features = x.shape
+        
+        y_ = np.where(y <= 0,-1,1) # assigning -ve or +ve part of the plains 
+
+        self.w = np.random.rand(n_features)
+        self.b = 0 
+
+        for _ in range(epcoh):
+            for i, x_i in enumerate(x):
+
+                sideOfPlane = y_[i] * (np.dot(x_i,self.w) - self.b) >= 1
+                
+                if sideOfPlane == True:
+                    self.w = self.w - (learningRate * (2*lambda_para*self.w) )
+                
+                else:
+                    self.w = self.w - (learningRate * (2 * lambda_para * self.w - np.dot(x_i,y_[i])))
+                    self.b = self.b - (learningRate * y_[i] )
+
+        print(f'weights = {self.w} bias = {self.b}')
+        self.plot_svm(x,y)
