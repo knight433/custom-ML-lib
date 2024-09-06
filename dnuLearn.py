@@ -90,9 +90,6 @@ class LinearRegression:
         ani = FuncAnimation(fig, update, frames=len(history), interval=interval, repeat=False)
         plt.show()
 
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 
 class LogisticRegression:
     def __init__(self):
@@ -168,7 +165,6 @@ class LogisticRegression:
 
         ani = FuncAnimation(fig, update, frames=len(history), interval=200, repeat=False)
         plt.show()
-
 
     
 class Knn:

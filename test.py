@@ -11,27 +11,25 @@ import numpy as np
 
 # kmean_model = dnuLearn.KMeanClustering(epoch=10)
 # center = kmean_model.train(X, n_components)
-# kmean_model._plot_training_progress(X,interval=1000)
+# kmean_model._plot_training_progress(X,interval=100)
 
-# n_samples = 200
-# n_components = 1
+n_samples = 200
+n_components = 1
 
-# def generate_linear_data(num_points, num_features, noise_std):
+def generate_linear_data(num_points, num_features, noise_std):
     
-#     X = np.random.rand(num_points, num_features)
-#     true_coefficients = np.random.rand(num_features + 1)
-#     y = true_coefficients[0] + np.dot(X, true_coefficients[1:])
-#     noise = np.random.normal(0, noise_std, size=num_points)
-#     y += noise
+    X = np.random.rand(num_points, num_features)
+    true_coefficients = np.random.rand(num_features + 1)
+    y = true_coefficients[0] + np.dot(X, true_coefficients[1:])
+    noise = np.random.normal(0, noise_std, size=num_points)
+    y += noise
     
-#     return X, y, true_coefficients
+    return X, y, true_coefficients
 
-# X, y, true_coefficients = generate_linear_data(n_samples, n_components,0.1)
+X, y, true_coefficients = generate_linear_data(n_samples, n_components,0.1)
 
-
-# linear_model = dnuLearn.LinearRegression()
-# linear_model.gradDestSolve(X, y, learningRate=0.1, interval=200,epoch=200)
-
+linear_model = dnuLearn.LinearRegression()
+linear_model.gradDestSolve(X, y, learningRate=0.1, interval=200,epoch=200)
 
 # def generate_logistic_data(num_points, num_features, noise_std):
 #     X, y = make_classification(
@@ -52,15 +50,14 @@ import numpy as np
 #     return X, y
 
 # Example usage:
-n_samples = 100
-n_components = 3
+# n_samples = 100
+# n_components = 2
 
-# X, y = generate_logistic_data(n_samples, n_components, 0.2)
+# # X, y = generate_logistic_data(n_samples, n_components, 0.2)
 # # logistic_model = dnuLearn.LogisticRegression()
 # # logistic_model.solveGradientMethod(X, y, learning_rate=0.1, epoch=100)
 
+# X, y = make_blobs(n_samples=n_samples,n_features=n_components,centers=2,cluster_std=1.05, random_state=40)
 
-X, y = make_blobs(n_samples=n_samples,n_features=n_components,centers=2,cluster_std=1.05, random_state=40)
-
-svm_model = dnuLearn.svm()
-svm_model.solve(X,y)
+# svm_model = dnuLearn.svm()
+# svm_model.solve(X,y)
