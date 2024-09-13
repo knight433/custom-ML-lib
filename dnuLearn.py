@@ -73,7 +73,7 @@ class LinearRegression:
         self.coef = [w0] + list(weights)
         self._animateLR(input_ar, input_labels, history, interval)
 
-    def _animateLR(self, input_ar, input_labels, history, interval):
+    def _animateLR(self, input_ar, input_labels, history, interval,save_video=True):
         fig, ax = plt.subplots()
         def update(epoch):
             ax.clear()
@@ -88,7 +88,12 @@ class LinearRegression:
             ax.set_title(f'Linear Regression Fit at Epoch {epoch + 1}')
             ax.legend()
         ani = FuncAnimation(fig, update, frames=len(history), interval=interval, repeat=False)
-        plt.show()
+
+        if save_video:
+            ani.save('LinearRegression.mp4', writer='ffmpeg', fps=20)
+            print(f'Animation saved as LinearRegression')
+        else:
+            plt.show()
 
 
 class LogisticRegression:
@@ -150,7 +155,7 @@ class LogisticRegression:
         self._animatePerceptron(x_par, y_labels, history, list(range(len(history))))
         return bias, weights
 
-    def _animatePerceptron(self, X, y, history, indices):
+    def _animatePerceptron(self, X, y, history, indices, save_video=True, filename='perceptron_animation.mp4'):
         fig, ax = plt.subplots()
 
         def update(epoch):
@@ -159,12 +164,18 @@ class LogisticRegression:
             bias = weights[0]
             coeff = weights[1:]
             self._plotLine(bias, coeff, X, y, ax)
-            ax.scatter(X[indices[epoch], 0], X[indices[epoch], 1], color='red', s=100, edgecolor='k', label='Point k')
-            ax.set_title(f'Perceptron at Epoch {epoch + 1}')
-            ax.legend()
+            # ax.scatter(X[indices[epoch], 0], X[indices[epoch], 1], color='red', s=100, edgecolor='k', label='Point k')
+            ax.set_title(f'at Epoch {epoch + 1}')
+            # ax.legend()
 
         ani = FuncAnimation(fig, update, frames=len(history), interval=200, repeat=False)
-        plt.show()
+
+        # Save animation as video if requested
+        if save_video:
+            ani.save(filename, writer='ffmpeg', fps=20)
+            print(f'Animation saved as {filename}')
+        else:
+            plt.show()
 
     
 class Knn:
@@ -208,11 +219,11 @@ class KMeanClustering:
     def _distanceCal(self, x1, x2):
         return np.sqrt(np.sum((x1 - x2) ** 2))
 
-    def _plot_training_progress(self, data, interval=200):
+    def _plot_training_progress(self, data, interval=200, save_video=False, filename='KmeansCluster.mp4'):
         fig, ax = plt.subplots(figsize=(8, 6))
-        
+
         def update(epoch):
-            ax.clear()
+            ax.clear()  # Clear the previous plot
             labels = self.history[epoch][1]
             centers = self.history[epoch][0]
             unique_labels = np.unique(labels)
@@ -229,6 +240,67 @@ class KMeanClustering:
             ax.legend()
         
         ani = FuncAnimation(fig, update, frames=len(self.history), interval=interval, repeat=False)
+        
+        # Save animation as a video file if requested
+        if save_video:
+            ani.save(filename, writer='ffmpeg', fps=2)
+            print(f'Animation saved as {filename}')
+        else:
+            plt.show()
+
+    def train(self, data, k):
+        min_vals = np.min(data, axis=0)
+        max_vals = np.max(data, axis=0)
+        self.centers = np.random.uniform(low=min_vals, high=max_vals, size=(k, data.shape[1]))
+
+        for epoch in range(self.epoch):
+            cluster_labels = []
+            for x in data:
+                distances = [self._distanceCal(x, center) for center in self.centers]
+                cluster = np.argmin(distances)
+                cluster_labels.append(cluster)
+            
+            cluster_labels = np.array(cluster_labels)
+
+            new_centers = np.zeros_like(self.centers)
+            for i in range(k):
+                points_in_cluster = data[cluster_labels == i]
+                if points_in_cluster.size > 0:
+                    new_centers[i] = np.mean(points_in_cluster, axis=0)
+                else:  # If a cluster loses all points, reinitialize its center randomly
+                    new_centers[i] = np.random.uniform(low=min_vals, high=max_vals, size=data.shape[1])
+    
+            self.centers = new_centers
+            self.history.append((self.centers.copy(), cluster_labels.copy()))
+        
+        self.y = cluster_labels
+        return self.centers
+
+    def predict(self, data):
+        predictions = []
+        for x in data:
+            distances = [self._distanceCal(x, center) for center in self.centers]
+            cluster = np.argmin(distances)
+            predictions.append(cluster)
+        return np.array(predictions)
+    
+    def plot_clusters(self, data, labels=None):
+        if labels is None:
+            labels = self.predict(data)
+
+        plt.figure(figsize=(8, 6))
+        
+        unique_labels = np.unique(labels)
+        colors = plt.cm.get_cmap('tab10', len(unique_labels))
+
+        for i, label in enumerate(unique_labels):
+            cluster_points = data[labels == label]
+            plt.scatter(cluster_points[:, 0], cluster_points[:, 1], s=50, c=[colors(i)], label=f'Cluster {label}')
+
+        plt.scatter(self.centers[:, 0], self.centers[:, 1], s=200, c='red', marker='X', label='Centers')
+        plt.xlabel('Feature 1')
+        plt.ylabel('Feature 2')
+        plt.legend()
         plt.show()
         
     def train(self, data, k):
@@ -286,66 +358,96 @@ class KMeanClustering:
         plt.legend()
         plt.show()
 
-class svm:
+class svc:
 
     def __init__(self) -> None:
         self.w = None
         self.b = None
+        self.history = []  # To store weight and bias for each epoch
     
     def predict(self, X):
         approx = np.dot(X, self.w) - self.b
         return np.sign(approx)
 
-    def plot_svm(self,X,y):
+    def plot_svm(self, X, y, save_as_video=False, video_name='svm_animation.mp4'):
         def get_hyperplane_value(x, w, b, offset):
             return (-w[0] * x + b + offset) / w[1]
 
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
-        plt.scatter(X[:, 0], X[:, 1], marker="o", c=y)
+        fig, ax = plt.subplots()
+
+        # Scatter plot for data points
+        scatter = ax.scatter(X[:, 0], X[:, 1], c=y)
+
+        # Initialize the line for the decision boundary
+        line, = ax.plot([], [], "y--")
+        margin1, = ax.plot([], [], "k")
+        margin2, = ax.plot([], [], "k")
 
         x0_1 = np.amin(X[:, 0])
         x0_2 = np.amax(X[:, 0])
-
-        x1_1 = get_hyperplane_value(x0_1, self.w, self.b, 0)
-        x1_2 = get_hyperplane_value(x0_2, self.w, self.b, 0)
-
-        x1_1_m = get_hyperplane_value(x0_1, self.w, self.b, -1)
-        x1_2_m = get_hyperplane_value(x0_2, self.w, self.b, -1)
-
-        x1_1_p = get_hyperplane_value(x0_1, self.w, self.b, 1)
-        x1_2_p = get_hyperplane_value(x0_2, self.w, self.b, 1)
-
-        ax.plot([x0_1, x0_2], [x1_1, x1_2], "y--")
-        ax.plot([x0_1, x0_2], [x1_1_m, x1_2_m], "k")
-        ax.plot([x0_1, x0_2], [x1_1_p, x1_2_p], "k")
-
         x1_min = np.amin(X[:, 1])
         x1_max = np.amax(X[:, 1])
         ax.set_ylim([x1_min - 3, x1_max + 3])
 
-        plt.show()
+        # Add text for epoch display
+        epoch_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, fontsize=12, verticalalignment='top')
 
-    def solve (self,x,y,learningRate=0.01,lambda_para = 0.01,epcoh=1000):
-        
+        def init():
+            line.set_data([], [])
+            margin1.set_data([], [])
+            margin2.set_data([], [])
+            epoch_text.set_text('')
+            return line, margin1, margin2, epoch_text
+
+        def update(epoch):
+            w, b = self.history[epoch]
+            x1_1 = get_hyperplane_value(x0_1, w, b, 0)
+            x1_2 = get_hyperplane_value(x0_2, w, b, 0)
+
+            x1_1_m = get_hyperplane_value(x0_1, w, b, -1)
+            x1_2_m = get_hyperplane_value(x0_2, w, b, -1)
+
+            x1_1_p = get_hyperplane_value(x0_1, w, b, 1)
+            x1_2_p = get_hyperplane_value(x0_2, w, b, 1)
+
+            # Update the decision boundary and margins
+            line.set_data([x0_1, x0_2], [x1_1, x1_2])
+            margin1.set_data([x0_1, x0_2], [x1_1_m, x1_2_m])
+            margin2.set_data([x0_1, x0_2], [x1_1_p, x1_2_p])
+
+            # Update the epoch text
+            epoch_text.set_text(f'Epoch: {epoch + 1}')
+            return line, margin1, margin2, epoch_text
+
+        ani = FuncAnimation(fig, update, frames=len(self.history), init_func=init, blit=True, repeat=False,interval=100)
+
+        # Save animation as a video if requested
+        if save_as_video:
+            ani.save(video_name, writer='ffmpeg', fps=12)
+            print(f'Animation saved as {video_name}')
+        else:
+            plt.show()
+
+    def solve(self, x, y, learningRate=0.01, lambda_para=0.01, epoch=100, save_video=False, video_name='svm_animation.mp4'):
         n_samples, n_features = x.shape
-        
-        y_ = np.where(y <= 0,-1,1) # assigning -ve or +ve part of the plains 
+        y_ = np.where(y <= 0, -1, 1)  # Assign -1 or 1 to labels
 
+        # Initialize weights and bias
         self.w = np.random.rand(n_features)
         self.b = 0 
 
-        for _ in range(epcoh):
+        for _ in range(epoch):
             for i, x_i in enumerate(x):
-
-                sideOfPlane = y_[i] * (np.dot(x_i,self.w) - self.b) >= 1
-                
-                if sideOfPlane == True:
-                    self.w = self.w - (learningRate * (2*lambda_para*self.w) )
-                
+                sideOfPlane = y_[i] * (np.dot(x_i, self.w) - self.b) >= 1
+                if sideOfPlane:
+                    self.w -= learningRate * (2 * lambda_para * self.w)
                 else:
-                    self.w = self.w - (learningRate * (2 * lambda_para * self.w - np.dot(x_i,y_[i])))
-                    self.b = self.b - (learningRate * y_[i] )
+                    self.w -= learningRate * (2 * lambda_para * self.w - np.dot(x_i, y_[i]))
+                    self.b -= learningRate * y_[i]
 
-        print(f'weights = {self.w} bias = {self.b}')
-        self.plot_svm(x,y)
+            # Store weight and bias for the current epoch
+            self.history.append((self.w.copy(), self.b))
+
+        print(f'Final weights = {self.w} bias = {self.b}')
+        self.plot_svm(x, y, save_as_video=save_video, video_name=video_name)
+

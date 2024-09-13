@@ -11,8 +11,9 @@ import numpy as np
 
 # kmean_model = dnuLearn.KMeanClustering(epoch=10)
 # center = kmean_model.train(X, n_components)
-# kmean_model._plot_training_progress(X,interval=100)
+# kmean_model._plot_training_progress(X, save_video=True, filename='my_kmeans_animation.mp4')
 
+''' for linear reg '''
 n_samples = 200
 n_components = 1
 
@@ -29,8 +30,9 @@ def generate_linear_data(num_points, num_features, noise_std):
 X, y, true_coefficients = generate_linear_data(n_samples, n_components,0.1)
 
 linear_model = dnuLearn.LinearRegression()
-linear_model.gradDestSolve(X, y, learningRate=0.1, interval=200,epoch=200)
+linear_model.gradDestSolve(X, y, learningRate=0.1, interval=50,epoch=200)
 
+'''for logistic reg'''
 # def generate_logistic_data(num_points, num_features, noise_std):
 #     X, y = make_classification(
 #         n_samples=num_points,
@@ -49,15 +51,16 @@ linear_model.gradDestSolve(X, y, learningRate=0.1, interval=200,epoch=200)
 
 #     return X, y
 
-# Example usage:
 # n_samples = 100
 # n_components = 2
 
-# # X, y = generate_logistic_data(n_samples, n_components, 0.2)
-# # logistic_model = dnuLearn.LogisticRegression()
-# # logistic_model.solveGradientMethod(X, y, learning_rate=0.1, epoch=100)
+# X, y = generate_logistic_data(n_samples, n_components, 0.2)
+# logistic_model = dnuLearn.LogisticRegression()
+# logistic_model.solveGradientMethod(X, y, learning_rate=0.1, epoch=100)
 
+
+'''for svm'''
 # X, y = make_blobs(n_samples=n_samples,n_features=n_components,centers=2,cluster_std=1.05, random_state=40)
 
-# svm_model = dnuLearn.svm()
-# svm_model.solve(X,y)
+# svm_model = dnuLearn.svc()
+# svm_model.solve(X, y, save_video=True, video_name='my_svm_animation.mp4')
